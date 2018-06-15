@@ -7,14 +7,15 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
-	"kkn.fi/vanity"
+	"github.com/keks/vanity"
 )
 
 type Import struct {
-	Path     string // full import path
+	Path     string // import path without domain
 	VCS      string // usuall "git"
 	RepoRoot string
 
@@ -24,12 +25,14 @@ type Import struct {
 func (i *Import) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if i.h == nil {
 		i.h = vanity.Redirect(i.VCS, i.Path, i.RepoRoot)
+		fmt.Println("Import Handler initialized for", i.Path)
 	}
 
 	i.h.ServeHTTP(w, r)
 }
 
 func HandleImports(imports []*Import) http.Handler {
+	defer fmt.Println("HandleImports initialized")
 	importMap := make(map[string]*Import)
 
 	for _, imprt := range imports {
@@ -37,26 +40,35 @@ func HandleImports(imports []*Import) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		p := r.URL.Host + "/" + r.URL.Path
+		p := r.Host + r.URL.Path
+		fmt.Println("incoming request:", p)
 
-		for len(p) > 0 {
+		var lastp string
+
+		for p != lastp {
+			fmt.Println(p)
 			if imprt, ok := importMap[p]; ok {
 				fmt.Printf("found %q for %q", p, r.URL.Path)
 				imprt.ServeHTTP(w, r)
 				return
 			}
+			lastp = p
 			p, _ = path.Split(p)
+			p = strings.TrimSuffix(p, "/")
 		}
 
+		fmt.Println(importMap)
 		http.Error(w, "package not found", http.StatusNotFound)
 	})
 }
 
 func HandleLoadFile(path string) (http.Handler, error) {
+	defer fmt.Println("HandleLoadFile initialized")
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "error opening file")
 	}
+
 
 	var imports []*Import
 
@@ -82,6 +94,8 @@ func HandleLoadFile(path string) (http.Handler, error) {
 		})
 	}
 
+	fmt.Printf("loaded imports: %#v\n", imports)
+
 	return HandleImports(imports), nil
 }
 
@@ -90,6 +104,8 @@ func HandleHotReloadFile(path string) http.Handler {
 		lastLoad time.Time
 		h        http.Handler
 	)
+
+	defer fmt.Println("HandleHotReloadFile initialized")
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fi, err := os.Stat(path)
