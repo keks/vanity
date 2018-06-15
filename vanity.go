@@ -1,4 +1,4 @@
-package vanity // import "kkn.fi/vanity"
+package vanity
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ func Redirect(vcs, importPath, repoRoot string) http.Handler {
 			return
 		}
 
-		if !strings.HasPrefix(strings.TrimSuffix(r.Host+r.URL.Path, "/"), importPath+"/") {
+		if !strings.HasPrefix(strings.TrimSuffix(r.Host+r.URL.Path, "/") + "/", importPath+"/") {
 			http.NotFound(w, r)
 			return
 		}
