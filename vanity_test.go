@@ -59,7 +59,7 @@ func TestIndexPageNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	srv := Redirect("git", "kkn.fi", "https://github.com/kare")
+	srv := Redirect("git", "go.cryptoscope.co/vanity", "https://github.com/keks/vanity")
 	srv.ServeHTTP(res, req)
 	if res.Code != http.StatusNotFound {
 		t.Fatalf("Expected response status 404, but got %v", res.Code)
@@ -71,11 +71,10 @@ func TestGoTool(t *testing.T) {
 		path   string
 		result string
 	}{
-		{"/gist?go-get=1", "kkn.fi/gist git https://github.com/kare/gist"},
-		{"/set?go-get=1", "kkn.fi/set git https://github.com/kare/set"},
-		{"/cmd/vanity?go-get=1", "kkn.fi/cmd/vanity git https://github.com/kare/vanity"},
-		{"/cmd/tcpproxy?go-get=1", "kkn.fi/cmd/tcpproxy git https://github.com/kare/tcpproxy"},
-		{"/pkg/subpkg?go-get=1", "kkn.fi/pkg/subpkg git https://github.com/kare/pkg"},
+		{"/vanity/?go-get=1", "go.cryptoscope.co/vanity git https://github.com/keks/vanity"},
+		{"/vanity/cmd/?go-get=1", "go.cryptoscope.co/vanity git https://github.com/keks/vanity"},
+		{"/vanity/cmd/vanity?go-get=1", "go.cryptoscope.co/vanity git https://github.com/keks/vanity"},
+		{"/vanity/doesnt-even-exist?go-get=1", "go.cryptoscope.co/vanity git https://github.com/keks/vanity"},
 	}
 	for _, test := range tests {
 		res := httptest.NewRecorder()
@@ -83,7 +82,8 @@ func TestGoTool(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		srv := Redirect("git", "kkn.fi", "https://github.com/kare")
+		req.Host="go.cryptoscope.co"
+		srv := Redirect("git", "go.cryptoscope.co/vanity", "https://github.com/keks/vanity")
 		srv.ServeHTTP(res, req)
 
 		body, err := ioutil.ReadAll(res.Body)

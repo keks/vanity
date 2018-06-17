@@ -7,6 +7,9 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+
+	//"go.cryptoscope.co/vanity"
+	"github.com/keks/vanity"
 )
 
 func die(err error) {
@@ -19,7 +22,7 @@ func main() {
 		die(errors.New("usage: vanityd <config file> <listen addr>"))
 	}
 
-	h := HandleHotReloadFile(os.Args[1])
+	h := vanity.HandleHotReloadFile(os.Args[1])
 	l, err := net.Listen("tcp", os.Args[2])
 	if err != nil {
 		die(err)

@@ -6,11 +6,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/keks/vanity"
 )
 
 func TestImport(t *testing.T) {
 	type testcase struct {
-		imprt    *Import
+		imprt    *vanity.Repo
 		srvHost  string
 		reqPaths []string
 		status   []int
@@ -36,8 +37,8 @@ func TestImport(t *testing.T) {
 
 	tcs := []testcase{
 		{
-			imprt: &Import{
-				Path:     "go.cryptoscope.co/vanityd",
+			imprt: &vanity.Repo{
+				ImportPrefix:     "go.cryptoscope.co/vanityd",
 				VCS:      "git",
 				RepoRoot: "github.com/keks/vanityd",
 			},
