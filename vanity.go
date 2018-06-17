@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type data struct {
+type Data struct {
 	ImportRoot string
 	VCS        string
 	VCSRoot    string
@@ -17,7 +17,7 @@ var tmpl = template.Must(template.New("main").Parse(`<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="go-import" content="{{.ImportRoot}} {{.VCS}} {{.VCSRoot}}">
+<meta name="go-import" content="{{.ImportRoot}} {{.VCS}} https://{{.VCSRoot}}">
 </head>
 </html>
 `))
@@ -47,25 +47,10 @@ func Redirect(vcs, importPath, repoRoot string) http.Handler {
 			return
 		}
 
-		var path string
-		if strings.HasPrefix(r.URL.Path, "/cmd/") {
-			path = r.URL.Path[4:]
-		} else {
-			path = r.URL.Path
-		}
-
-		// redirect github.com/kare/pkg/sub -> github.com/kare/pkg
-		vcsroot := repoRoot
-		f := func(c rune) bool { return c == '/' }
-		shortPath := strings.FieldsFunc(path, f)
-		if len(shortPath) > 0 {
-			vcsroot = repoRoot + "/" + shortPath[0]
-		}
-
-		d := &data{
-			ImportRoot: r.Host + r.URL.Path,
+		d := &Data{
+			ImportRoot: importPath,
 			VCS:        vcs,
-			VCSRoot:    vcsroot,
+			VCSRoot:    repoRoot,
 		}
 		var buf bytes.Buffer
 		err := tmpl.Execute(&buf, d)
