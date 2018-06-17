@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/keks/vanity"
+	"go.cryptoscope.co/vanity"
 )
 
 func TestImport(t *testing.T) {

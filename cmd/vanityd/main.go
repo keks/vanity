@@ -8,8 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	//"go.cryptoscope.co/vanity"
-	"github.com/keks/vanity"
+	"go.cryptoscope.co/vanity"
 )
 
 func die(err error) {
