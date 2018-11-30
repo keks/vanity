@@ -159,6 +159,7 @@ func HandleHotReloadFile(path string) http.Handler {
 				writeError(w, err)
 				return
 			}
+			lastLoad = time.Now()
 		}
 
 		h.ServeHTTP(w, r)
