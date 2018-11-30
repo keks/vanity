@@ -3,9 +3,9 @@ package vanity
 import (
 	"bytes"
 	"encoding/csv"
-	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -71,7 +71,6 @@ func (repo *Repo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleImports(imports []*Repo) http.Handler {
-	defer fmt.Println("HandleImports initialized")
 	importMap := make(map[string]*Repo)
 
 	for _, imprt := range imports {
@@ -80,14 +79,12 @@ func HandleImports(imports []*Repo) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p := r.Host + r.URL.Path
-		fmt.Println("incoming request:", p)
 
 		var lastp string
 
 		for p != lastp {
-			fmt.Println(p)
 			if imprt, ok := importMap[p]; ok {
-				fmt.Printf("found %q for %q", p, r.URL.Path)
+				log.Printf("found %q for %q", p, r.URL.Path)
 				imprt.ServeHTTP(w, r)
 				return
 			}
@@ -96,13 +93,11 @@ func HandleImports(imports []*Repo) http.Handler {
 			p = strings.TrimSuffix(p, "/")
 		}
 
-		fmt.Println(importMap)
 		http.Error(w, "package not found", http.StatusNotFound)
 	})
 }
 
 func HandleLoadFile(path string) (http.Handler, error) {
-	defer fmt.Println("HandleLoadFile initialized")
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "error opening file")
@@ -132,7 +127,7 @@ func HandleLoadFile(path string) (http.Handler, error) {
 		})
 	}
 
-	fmt.Printf("loaded imports: %#v\n", imports)
+	log.Printf("loaded imports: %#v\n", imports)
 
 	return HandleImports(imports), nil
 }
@@ -142,8 +137,6 @@ func HandleHotReloadFile(path string) http.Handler {
 		lastLoad time.Time
 		h        http.Handler
 	)
-
-	defer fmt.Println("HandleHotReloadFile initialized")
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fi, err := os.Stat(path)
@@ -159,6 +152,7 @@ func HandleHotReloadFile(path string) http.Handler {
 				writeError(w, err)
 				return
 			}
+			lastLoad = time.Now()
 		}
 
 		h.ServeHTTP(w, r)
